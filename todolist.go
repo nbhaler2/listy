@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 
 	"github.com/joho/godotenv"
@@ -51,6 +52,10 @@ func ListTodos(todos []Todo) {
 		fmt.Println("No Todos found")
 		return
 	}
+	// Sort todos by ID before displaying
+	sort.Slice(todos, func(i, j int) bool {
+		return todos[i].Id < todos[j].Id
+	})
 	for _, todo := range todos {
 		fmt.Println(todo)
 	}
@@ -124,18 +129,36 @@ func UpdateItemByID(todos []Todo, Id int, Newname string) error {
 }
 
 func ListPendingTodos(todos []Todo) {
+	// Sort todos by ID before displaying
+	sort.Slice(todos, func(i, j int) bool {
+		return todos[i].Id < todos[j].Id
+	})
+	found := false
 	for _, todo := range todos {
 		if todo.Done == false {
 			fmt.Println(todo)
+			found = true
 		}
+	}
+	if !found {
+		fmt.Println("No pending todos found")
 	}
 }
 
 func ListCompleteTodos(todos []Todo) {
+	// Sort todos by ID before displaying
+	sort.Slice(todos, func(i, j int) bool {
+		return todos[i].Id < todos[j].Id
+	})
+	found := false
 	for _, todo := range todos {
 		if todo.Done == true {
 			fmt.Println(todo)
+			found = true
 		}
+	}
+	if !found {
+		fmt.Println("No completed todos found")
 	}
 }
 
@@ -202,8 +225,9 @@ func DeleteTodo(id int) error {
 		return fmt.Errorf("Supabase client not initialized")
 	}
 
-	// Use filter with Eq method for WHERE clause
-	_, _, err := supabaseClient.From("todos").Delete("id", "eq."+strconv.Itoa(id)).Execute()
+	// Delete with WHERE clause using filter builder
+	// Use Eq filter like Update does
+	_, _, err := supabaseClient.From("todos").Delete("", "").Eq("id", strconv.Itoa(id)).Execute()
 	if err != nil {
 		return fmt.Errorf("error deleting todo from Supabase: %v", err)
 	}
