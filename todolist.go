@@ -3,14 +3,18 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
+	"github.com/supabase-community/supabase-go"
 )
 
 type Todo struct {
-	Id   int
-	Item string
-	Done bool
+	Id   int    `json:"id"`
+	Item string `json:"item"`
+	Done bool   `json:"done"`
 }
 
 func (i *Todo) UpdateItem(Uname string) {
@@ -135,45 +139,101 @@ func ListCompleteTodos(todos []Todo) {
 	}
 }
 
-// File persistence functions
-const dataFile = "todos.json"
+// Supabase client (global variable)
+var supabaseClient *supabase.Client
 
-// SaveTodos saves the todos to a JSON file
-func SaveTodos(todos []Todo) error {
-	data, err := json.MarshalIndent(todos, "", "  ")
+// InitSupabase initializes the Supabase client
+func InitSupabase() error {
+	// Load environment variables from .env file
+	err := godotenv.Load()
 	if err != nil {
-		return fmt.Errorf("error encoding todos: %v", err)
+		// .env file is optional, continue without it
+		log.Println("Warning: .env file not found, using environment variables")
 	}
 
-	err = os.WriteFile(dataFile, data, 0644)
-	if err != nil {
-		return fmt.Errorf("error writing file: %v", err)
+	supabaseURL := os.Getenv("SUPABASE_URL")
+	supabaseKey := os.Getenv("SUPABASE_KEY")
+
+	if supabaseURL == "" || supabaseKey == "" {
+		return fmt.Errorf("SUPABASE_URL and SUPABASE_KEY must be set in environment variables or .env file")
 	}
+
+	client, err := supabase.NewClient(supabaseURL, supabaseKey, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create Supabase client: %v", err)
+	}
+
+	supabaseClient = client
 	return nil
 }
 
-// LoadTodos loads todos from a JSON file
-func LoadTodos() ([]Todo, error) {
-	// Check if file exists
-	if _, err := os.Stat(dataFile); os.IsNotExist(err) {
-		// File doesn't exist, return empty slice
-		return []Todo{}, nil
+// InsertTodo inserts a single todo into Supabase
+func InsertTodo(todo Todo) error {
+	if supabaseClient == nil {
+		return fmt.Errorf("Supabase client not initialized")
 	}
 
-	data, err := os.ReadFile(dataFile)
+	_, _, err := supabaseClient.From("todos").Insert(todo, false, "", "", "").Execute()
 	if err != nil {
-		return nil, fmt.Errorf("error reading file: %v", err)
+		return fmt.Errorf("error inserting todo to Supabase: %v", err)
+	}
+
+	return nil
+}
+
+// UpdateTodo updates a single todo in Supabase by ID
+func UpdateTodo(id int, todo Todo) error {
+	if supabaseClient == nil {
+		return fmt.Errorf("Supabase client not initialized")
+	}
+
+	// Update the todo with the specified ID
+	_, _, err := supabaseClient.From("todos").Update(todo, "", "").Eq("id", strconv.Itoa(id)).Execute()
+	if err != nil {
+		return fmt.Errorf("error updating todo in Supabase: %v", err)
+	}
+
+	return nil
+}
+
+// DeleteTodo deletes a single todo from Supabase by ID
+func DeleteTodo(id int) error {
+	if supabaseClient == nil {
+		return fmt.Errorf("Supabase client not initialized")
+	}
+
+	// Use filter with Eq method for WHERE clause
+	_, _, err := supabaseClient.From("todos").Delete("id", "eq."+strconv.Itoa(id)).Execute()
+	if err != nil {
+		return fmt.Errorf("error deleting todo from Supabase: %v", err)
+	}
+
+	return nil
+}
+
+// LoadTodos loads todos from Supabase
+func LoadTodos() ([]Todo, error) {
+	if supabaseClient == nil {
+		return nil, fmt.Errorf("Supabase client not initialized")
 	}
 
 	var todos []Todo
-	if len(data) == 0 {
-		// File is empty, return empty slice
-		return []Todo{}, nil
+	data, _, err := supabaseClient.From("todos").Select("*", "", false).Execute()
+	if err != nil {
+		return nil, fmt.Errorf("error loading todos from Supabase: %v", err)
 	}
 
-	err = json.Unmarshal(data, &todos)
-	if err != nil {
-		return nil, fmt.Errorf("error decoding JSON: %v", err)
+	// Parse the JSON response
+	if len(data) > 0 {
+		err = json.Unmarshal(data, &todos)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing todos: %v", err)
+		}
+	}
+
+	// If no todos found, return empty slice
+	if todos == nil {
+		return []Todo{}, nil
 	}
 
 	return todos, nil
@@ -194,7 +254,15 @@ func GetNextID(todos []Todo) int {
 }
 
 func main() {
-	// Load todos from file at startup
+	// Initialize Supabase client
+	err := InitSupabase()
+	if err != nil {
+		fmt.Printf("Error initializing Supabase: %v\n", err)
+		fmt.Println("Make sure SUPABASE_URL and SUPABASE_KEY are set in .env file or environment variables")
+		os.Exit(1)
+	}
+
+	// Load todos from Supabase at startup
 	todolist, err := LoadTodos()
 	if err != nil {
 		fmt.Printf("Warning: Could not load todos: %v\n", err)
@@ -229,21 +297,47 @@ func main() {
 			return
 		}
 		itemName := os.Args[2]
-		todolist = AddTodos(todolist, itemName, &nextId)
-		if err := SaveTodos(todolist); err != nil {
-			fmt.Printf("Error saving todos: %v\n", err)
+		newTodo := Todo{
+			Id:   nextId,
+			Item: itemName,
+			Done: false,
+		}
+		// Add to local list
+		todolist = append(todolist, newTodo)
+		nextId++
+		// Insert to Supabase
+		if err := InsertTodo(newTodo); err != nil {
+			fmt.Printf("Error saving todo: %v\n", err)
 		} else {
-			fmt.Printf("Added %s (Id: %d)\n", itemName, nextId-1)
+			fmt.Printf("Added %s (Id: %d)\n", itemName, newTodo.Id)
 		}
 
 	case "list":
-		ListTodos(todolist)
+		// Reload from database to get latest state
+		loadedTodos, err := LoadTodos()
+		if err != nil {
+			fmt.Printf("Error loading todos: %v\n", err)
+			return
+		}
+		ListTodos(loadedTodos)
 
 	case "pending":
-		ListPendingTodos(todolist)
+		// Reload from database to get latest state
+		loadedTodos, err := LoadTodos()
+		if err != nil {
+			fmt.Printf("Error loading todos: %v\n", err)
+			return
+		}
+		ListPendingTodos(loadedTodos)
 
 	case "completed":
-		ListCompleteTodos(todolist)
+		// Reload from database to get latest state
+		loadedTodos, err := LoadTodos()
+		if err != nil {
+			fmt.Printf("Error loading todos: %v\n", err)
+			return
+		}
+		ListCompleteTodos(loadedTodos)
 
 	case "complete":
 		if len(os.Args) < 3 {
@@ -255,14 +349,18 @@ func main() {
 			fmt.Println("Error: Invalid ID. Please provide a number")
 			return
 		}
-		if err := MarkCompleteByID(todolist, id); err != nil {
-			fmt.Println("Error:", err)
+		// Find and update locally
+		_, todo := FindTodosById(todolist, id)
+		if todo == nil {
+			fmt.Printf("Error: todo with ID %d not found\n", id)
+			return
+		}
+		todo.MarkComplete()
+		// Update in Supabase
+		if err := UpdateTodo(id, *todo); err != nil {
+			fmt.Printf("Error updating todo: %v\n", err)
 		} else {
-			if err := SaveTodos(todolist); err != nil {
-				fmt.Printf("Error saving todos: %v\n", err)
-			} else {
-				fmt.Printf("Todo %d marked as complete\n", id)
-			}
+			fmt.Printf("Todo %d marked as complete\n", id)
 		}
 
 	case "incomplete":
@@ -275,14 +373,18 @@ func main() {
 			fmt.Println("Error: Invalid ID. Please provide a number")
 			return
 		}
-		if err := MarkIncompleteByID(todolist, id); err != nil {
-			fmt.Println("Error:", err)
+		// Find and update locally
+		_, todo := FindTodosById(todolist, id)
+		if todo == nil {
+			fmt.Printf("Error: todo with ID %d not found\n", id)
+			return
+		}
+		todo.MarkIncomplete()
+		// Update in Supabase
+		if err := UpdateTodo(id, *todo); err != nil {
+			fmt.Printf("Error updating todo: %v\n", err)
 		} else {
-			if err := SaveTodos(todolist); err != nil {
-				fmt.Printf("Error saving todos: %v\n", err)
-			} else {
-				fmt.Printf("Todo %d marked as incomplete\n", id)
-			}
+			fmt.Printf("Todo %d marked as incomplete\n", id)
 		}
 
 	case "toggle":
@@ -295,14 +397,18 @@ func main() {
 			fmt.Println("Error: Invalid ID. Please provide a number")
 			return
 		}
-		if err := ToggleDoneByID(todolist, id); err != nil {
-			fmt.Println("Error:", err)
+		// Find and update locally
+		_, todo := FindTodosById(todolist, id)
+		if todo == nil {
+			fmt.Printf("Error: todo with ID %d not found\n", id)
+			return
+		}
+		todo.ToggleDone()
+		// Update in Supabase
+		if err := UpdateTodo(id, *todo); err != nil {
+			fmt.Printf("Error updating todo: %v\n", err)
 		} else {
-			if err := SaveTodos(todolist); err != nil {
-				fmt.Printf("Error saving todos: %v\n", err)
-			} else {
-				fmt.Printf("Todo %d status toggled\n", id)
-			}
+			fmt.Printf("Todo %d status toggled\n", id)
 		}
 
 	case "update":
@@ -317,14 +423,18 @@ func main() {
 			return
 		}
 		newText := os.Args[3]
-		if err := UpdateItemByID(todolist, id, newText); err != nil {
-			fmt.Println("Error:", err)
+		// Find and update locally
+		_, todo := FindTodosById(todolist, id)
+		if todo == nil {
+			fmt.Printf("Error: todo with ID %d not found\n", id)
+			return
+		}
+		todo.UpdateItem(newText)
+		// Update in Supabase
+		if err := UpdateTodo(id, *todo); err != nil {
+			fmt.Printf("Error updating todo: %v\n", err)
 		} else {
-			if err := SaveTodos(todolist); err != nil {
-				fmt.Printf("Error saving todos: %v\n", err)
-			} else {
-				fmt.Printf("Todo %d updated successfully\n", id)
-			}
+			fmt.Printf("Todo %d updated successfully\n", id)
 		}
 
 	case "remove":
@@ -337,16 +447,23 @@ func main() {
 			fmt.Println("Error: Invalid ID. Please provide a number")
 			return
 		}
-		var removeErr error
-		todolist, removeErr = RemoveTodos(todolist, id)
-		if removeErr != nil {
-			fmt.Println("Error:", removeErr)
+		// Check if todo exists
+		_, todo := FindTodosById(todolist, id)
+		if todo == nil {
+			fmt.Printf("Error: todo with ID %d not found\n", id)
+			return
+		}
+		// Remove from local list
+		todolist, err = RemoveTodos(todolist, id)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
+		// Delete from Supabase
+		if err := DeleteTodo(id); err != nil {
+			fmt.Printf("Error deleting todo: %v\n", err)
 		} else {
-			if err := SaveTodos(todolist); err != nil {
-				fmt.Printf("Error saving todos: %v\n", err)
-			} else {
-				fmt.Printf("Todo %d removed successfully\n", id)
-			}
+			fmt.Printf("Todo %d removed successfully\n", id)
 		}
 
 	default:
