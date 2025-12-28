@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -134,9 +135,74 @@ func ListCompleteTodos(todos []Todo) {
 	}
 }
 
+// File persistence functions
+const dataFile = "todos.json"
+
+// SaveTodos saves the todos to a JSON file
+func SaveTodos(todos []Todo) error {
+	data, err := json.MarshalIndent(todos, "", "  ")
+	if err != nil {
+		return fmt.Errorf("error encoding todos: %v", err)
+	}
+
+	err = os.WriteFile(dataFile, data, 0644)
+	if err != nil {
+		return fmt.Errorf("error writing file: %v", err)
+	}
+	return nil
+}
+
+// LoadTodos loads todos from a JSON file
+func LoadTodos() ([]Todo, error) {
+	// Check if file exists
+	if _, err := os.Stat(dataFile); os.IsNotExist(err) {
+		// File doesn't exist, return empty slice
+		return []Todo{}, nil
+	}
+
+	data, err := os.ReadFile(dataFile)
+	if err != nil {
+		return nil, fmt.Errorf("error reading file: %v", err)
+	}
+
+	var todos []Todo
+	if len(data) == 0 {
+		// File is empty, return empty slice
+		return []Todo{}, nil
+	}
+
+	err = json.Unmarshal(data, &todos)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding JSON: %v", err)
+	}
+
+	return todos, nil
+}
+
+// GetNextID calculates the next ID based on existing todos
+func GetNextID(todos []Todo) int {
+	if len(todos) == 0 {
+		return 1
+	}
+	maxID := 0
+	for _, todo := range todos {
+		if todo.Id > maxID {
+			maxID = todo.Id
+		}
+	}
+	return maxID + 1
+}
+
 func main() {
-	var todolist []Todo
-	nextId := 1
+	// Load todos from file at startup
+	todolist, err := LoadTodos()
+	if err != nil {
+		fmt.Printf("Warning: Could not load todos: %v\n", err)
+		todolist = []Todo{}
+	}
+
+	// Calculate next ID from existing todos
+	nextId := GetNextID(todolist)
 
 	// Check if user provided a command
 	if len(os.Args) < 2 {
@@ -164,7 +230,11 @@ func main() {
 		}
 		itemName := os.Args[2]
 		todolist = AddTodos(todolist, itemName, &nextId)
-		fmt.Printf("Added %s (Id: %d)\n", itemName, nextId-1)
+		if err := SaveTodos(todolist); err != nil {
+			fmt.Printf("Error saving todos: %v\n", err)
+		} else {
+			fmt.Printf("Added %s (Id: %d)\n", itemName, nextId-1)
+		}
 
 	case "list":
 		ListTodos(todolist)
@@ -188,7 +258,11 @@ func main() {
 		if err := MarkCompleteByID(todolist, id); err != nil {
 			fmt.Println("Error:", err)
 		} else {
-			fmt.Printf("Todo %d marked as complete\n", id)
+			if err := SaveTodos(todolist); err != nil {
+				fmt.Printf("Error saving todos: %v\n", err)
+			} else {
+				fmt.Printf("Todo %d marked as complete\n", id)
+			}
 		}
 
 	case "incomplete":
@@ -204,7 +278,11 @@ func main() {
 		if err := MarkIncompleteByID(todolist, id); err != nil {
 			fmt.Println("Error:", err)
 		} else {
-			fmt.Printf("Todo %d marked as incomplete\n", id)
+			if err := SaveTodos(todolist); err != nil {
+				fmt.Printf("Error saving todos: %v\n", err)
+			} else {
+				fmt.Printf("Todo %d marked as incomplete\n", id)
+			}
 		}
 
 	case "toggle":
@@ -220,7 +298,11 @@ func main() {
 		if err := ToggleDoneByID(todolist, id); err != nil {
 			fmt.Println("Error:", err)
 		} else {
-			fmt.Printf("Todo %d status toggled\n", id)
+			if err := SaveTodos(todolist); err != nil {
+				fmt.Printf("Error saving todos: %v\n", err)
+			} else {
+				fmt.Printf("Todo %d status toggled\n", id)
+			}
 		}
 
 	case "update":
@@ -238,7 +320,11 @@ func main() {
 		if err := UpdateItemByID(todolist, id, newText); err != nil {
 			fmt.Println("Error:", err)
 		} else {
-			fmt.Printf("Todo %d updated successfully\n", id)
+			if err := SaveTodos(todolist); err != nil {
+				fmt.Printf("Error saving todos: %v\n", err)
+			} else {
+				fmt.Printf("Todo %d updated successfully\n", id)
+			}
 		}
 
 	case "remove":
@@ -256,7 +342,11 @@ func main() {
 		if removeErr != nil {
 			fmt.Println("Error:", removeErr)
 		} else {
-			fmt.Printf("Todo %d removed successfully\n", id)
+			if err := SaveTodos(todolist); err != nil {
+				fmt.Printf("Error saving todos: %v\n", err)
+			} else {
+				fmt.Printf("Todo %d removed successfully\n", id)
+			}
 		}
 
 	default:
