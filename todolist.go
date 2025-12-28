@@ -12,26 +12,6 @@ type Todo struct {
 	Done bool
 }
 
-// func (i Todo) GetId() int{
-// 	return i.Id
-// }
-
-// func (i Todo) GetItem() string{
-// 	return i.Item
-// }
-
-// func (i Todo) GetDone() bool{
-// 	return i.Done
-// }
-
-// func AddItem(Id int, Uname string, Udone bool) *Todo{
-// 	i := Todo{}
-// 	i.Id = Id
-// 	i.Item = Uname
-// 	i.Done = Udone
-// 	return &i
-// }
-
 func (i *Todo) UpdateItem(Uname string) {
 	if Uname != "" {
 		i.Item = Uname
@@ -82,6 +62,7 @@ func FindTodos(todos []Todo, ItemName string) (int, *Todo) {
 	return -1, nil
 
 }
+
 func FindTodosById(todos []Todo, Id int) (int, *Todo) {
 
 	for i, todo := range todos {
