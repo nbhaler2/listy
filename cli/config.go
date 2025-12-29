@@ -12,4 +12,3 @@ func GetAPIURL() string {
 	}
 	return apiURL
 }
-

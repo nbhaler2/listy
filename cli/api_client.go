@@ -308,4 +308,3 @@ func (c *APIClient) CheckHealth() error {
 
 	return nil
 }
-

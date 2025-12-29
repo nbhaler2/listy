@@ -235,4 +235,3 @@ func handleRemove(client *APIClient) {
 	}
 	fmt.Printf("Todo %d removed successfully\n", id)
 }
-

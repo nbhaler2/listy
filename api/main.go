@@ -24,7 +24,12 @@ func main() {
 
 	// CORS middleware - allow requests from Next.js frontend
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:3000"} // Next.js default port
+	// Allow localhost for development and production URL from env
+	allowedOrigins := []string{"http://localhost:3000"}
+	if prodOrigin := os.Getenv("ALLOWED_ORIGIN"); prodOrigin != "" {
+		allowedOrigins = append(allowedOrigins, prodOrigin)
+	}
+	config.AllowOrigins = allowedOrigins
 	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}
 	config.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization"}
 	r.Use(cors.New(config))
