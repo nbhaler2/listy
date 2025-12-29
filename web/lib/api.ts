@@ -1,6 +1,16 @@
 // API client for connecting to Go API Server
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+// Ensure API URL has protocol, remove trailing slash
+const getApiUrl = () => {
+  const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+  // Add https:// if missing protocol
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    return `https://${url}`;
+  }
+  return url.replace(/\/$/, ''); // Remove trailing slash
+};
+
+const API_BASE_URL = getApiUrl();
 
 export interface Todo {
   id: number;
