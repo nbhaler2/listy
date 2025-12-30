@@ -83,98 +83,146 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 py-8 px-4 sm:py-12">
+      <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Listy</h1>
-          <p className="text-gray-600">Your Todo List Manager</p>
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg mb-4 transform hover:scale-105 transition-transform">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+            Listy
+          </h1>
+          <p className="text-gray-600 text-lg">Your smart todo list manager</p>
         </div>
 
         {/* Main Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          {/* Filter Tabs */}
-          <div className="flex gap-2 mb-6 border-b border-gray-200">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-4 py-2 font-medium transition-colors ${
-                filter === 'all'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setFilter('pending')}
-              className={`px-4 py-2 font-medium transition-colors ${
-                filter === 'pending'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              Pending
-            </button>
-            <button
-              onClick={() => setFilter('completed')}
-              className={`px-4 py-2 font-medium transition-colors ${
-                filter === 'completed'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              Completed
-            </button>
-          </div>
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="p-6 sm:p-8">
+            {/* Filter Tabs */}
+            <div className="flex gap-2 mb-8 bg-gray-50 p-1 rounded-xl">
+              <button
+                onClick={() => setFilter('all')}
+                className={`flex-1 px-4 py-3 font-semibold rounded-lg transition-all duration-200 ${
+                  filter === 'all'
+                    ? 'bg-white text-blue-600 shadow-md transform scale-105'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setFilter('pending')}
+                className={`flex-1 px-4 py-3 font-semibold rounded-lg transition-all duration-200 ${
+                  filter === 'pending'
+                    ? 'bg-white text-blue-600 shadow-md transform scale-105'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                }`}
+              >
+                Pending
+              </button>
+              <button
+                onClick={() => setFilter('completed')}
+                className={`flex-1 px-4 py-3 font-semibold rounded-lg transition-all duration-200 ${
+                  filter === 'completed'
+                    ? 'bg-white text-blue-600 shadow-md transform scale-105'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                }`}
+              >
+                Completed
+              </button>
+            </div>
 
           {/* Add Todo Form */}
           <AddTodoForm onAdd={handleAdd} />
 
-          {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-              {error}
-              <button
-                onClick={() => setError(null)}
-                className="ml-2 text-red-500 hover:text-red-700"
-              >
-                ×
-              </button>
-            </div>
-          )}
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-center justify-between animate-in slide-in-from-top">
+                <div className="flex items-center gap-3">
+                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-red-700 font-medium">{error}</span>
+                </div>
+                <button
+                  onClick={() => setError(null)}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full p-1 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
 
-          {/* Loading State */}
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="mt-4 text-gray-600">Loading todos...</p>
-            </div>
-          ) : (
-            <TodoList
-              todos={todos}
-              onToggle={handleToggle}
-              onDelete={handleDelete}
-              onUpdate={handleUpdate}
-            />
-          )}
+            {/* Loading State */}
+            {loading ? (
+              <div className="text-center py-16">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
+                <p className="mt-6 text-gray-600 font-medium">Loading your todos...</p>
+              </div>
+            ) : (
+              <TodoList
+                todos={todos}
+                onToggle={handleToggle}
+                onDelete={handleDelete}
+                onUpdate={handleUpdate}
+              />
+            )}
 
-          {/* Stats */}
-          {!loading && todos.length > 0 && (
-            <div className="mt-6 pt-4 border-t border-gray-200 text-sm text-gray-600">
-              {filter === 'all' && (
-                <p>
-                  {todos.filter((t) => !t.done).length} pending, {todos.filter((t) => t.done).length} completed
-                </p>
-              )}
-              {filter === 'pending' && <p>{todos.length} pending todos</p>}
-              {filter === 'completed' && <p>{todos.length} completed todos</p>}
-            </div>
-          )}
+            {/* Stats */}
+            {!loading && todos.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <div className="flex items-center justify-center gap-6 text-sm">
+                  {filter === 'all' && (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-amber-400"></div>
+                        <span className="text-gray-600 font-medium">
+                          <span className="font-bold text-gray-800">{todos.filter((t) => !t.done).length}</span> pending
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span className="text-gray-600 font-medium">
+                          <span className="font-bold text-gray-800">{todos.filter((t) => t.done).length}</span> completed
+                        </span>
+                      </div>
+                    </>
+                  )}
+                  {filter === 'pending' && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-amber-400"></div>
+                      <span className="text-gray-600 font-medium">
+                        <span className="font-bold text-gray-800">{todos.length}</span> pending {todos.length === 1 ? 'todo' : 'todos'}
+                      </span>
+                    </div>
+                  )}
+                  {filter === 'completed' && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      <span className="text-gray-600 font-medium">
+                        <span className="font-bold text-gray-800">{todos.length}</span> completed {todos.length === 1 ? 'todo' : 'todos'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-6 text-sm text-gray-500">
-          <p>Powered by Go API + Next.js</p>
+        <div className="text-center mt-8 text-sm text-gray-500">
+          <p className="flex items-center justify-center gap-2">
+            <span>Built with</span>
+            <span className="font-semibold text-blue-600">Go</span>
+            <span>+</span>
+            <span className="font-semibold text-indigo-600">Next.js</span>
+          </p>
         </div>
       </div>
     </div>
