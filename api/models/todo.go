@@ -2,13 +2,10 @@ package models
 
 // Todo represents a todo item
 type Todo struct {
-	Id            int     `json:"id"`
-	Item          string  `json:"item"`
-	Done          bool    `json:"done"`
-	ListId        *string `json:"list_id,omitempty"`        // NULL means main list, otherwise it's a list identifier
-	Priority      *string `json:"priority,omitempty"`        // "high", "medium", "low"
-	EstimatedTime *string `json:"estimated_time,omitempty"` // e.g., "30 minutes", "1 hour"
-	Category      *string `json:"category,omitempty"`        // Optional category/tag
+	Id     int     `json:"id"`
+	Item   string  `json:"item"`
+	Done   bool    `json:"done"`
+	ListId *string `json:"list_id,omitempty"` // NULL means main list, otherwise it's a list identifier
 }
 
 // CreateTodoRequest represents the request body for creating a todo

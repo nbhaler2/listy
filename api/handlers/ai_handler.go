@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"fmt"
-	"net/http"
 	"listy-api/models"
 	"listy-api/services"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -61,22 +61,10 @@ func CreateAITasks(c *gin.Context) {
 	var errors []string
 
 	for _, aiTask := range req.Tasks {
-		// Use clean task text
+		// Use clean task text only
 		taskText := aiTask.Text
 
-		// Store metadata separately
-		var priority, estimatedTime, category *string
-		if aiTask.Priority != "" {
-			priority = &aiTask.Priority
-		}
-		if aiTask.EstimatedTime != "" {
-			estimatedTime = &aiTask.EstimatedTime
-		}
-		if aiTask.Category != "" {
-			category = &aiTask.Category
-		}
-
-		todo, err := services.CreateTodoWithMetadata(taskText, req.ListId, priority, estimatedTime, category)
+		todo, err := services.CreateTodo(taskText, req.ListId)
 		if err != nil {
 			errors = append(errors, "Failed to create task: "+aiTask.Text+" - "+err.Error())
 			continue
@@ -104,4 +92,3 @@ func CreateAITasks(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, response)
 }
-

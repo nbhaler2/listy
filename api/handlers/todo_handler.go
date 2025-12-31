@@ -79,7 +79,7 @@ func CreateTodo(c *gin.Context) {
 func GetTodosByList(c *gin.Context) {
 	listIdParam := c.Param("listId")
 	var listId *string
-	
+
 	if listIdParam != "" && listIdParam != "main" {
 		listId = &listIdParam
 	}

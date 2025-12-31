@@ -23,9 +23,6 @@
 | item | text | - | No | No |
 | done | bool | false | No | No |
 | list_id | text | NULL | Yes | No |
-| priority | text | NULL | Yes | No |
-| estimated_time | text | NULL | Yes | No |
-| category | text | NULL | Yes | No |
 
 5. Click **"Save"**
 
@@ -72,11 +69,10 @@ go run todolist.go list
 
 You should see your todo! Check your Supabase dashboard > Table Editor > todos to see it in the database.
 
-## Adding Additional Columns (For AI Lists & Metadata Features)
+## Adding list_id Column (For AI Lists Feature)
 
-If you're upgrading an existing database to support the AI lists and metadata features:
+If you're upgrading an existing database to support the AI lists feature:
 
-### Add list_id Column
 1. Go to **Table Editor** > **todos** table
 2. Click **"Add column"**
 3. Fill in:
@@ -86,22 +82,7 @@ If you're upgrading an existing database to support the AI lists and metadata fe
    - **Nullable**: ✅ Yes
 4. Click **"Save"**
 
-### Add Metadata Columns (priority, estimated_time, category)
-Repeat the process for each column:
-
-1. Click **"Add column"**
-2. Fill in:
-   - **Name**: `priority` (or `estimated_time` or `category`)
-   - **Type**: `text`
-   - **Default value**: Leave empty (NULL)
-   - **Nullable**: ✅ Yes
-3. Click **"Save"**
-
-**Notes**: 
-- `list_id` is NULL for todos in the main list, and contains a string identifier for todos in separate AI-generated lists.
-- `priority` stores values like "high", "medium", "low"
-- `estimated_time` stores values like "30 minutes", "1 hour"
-- `category` stores optional category tags
+**Note**: `list_id` is NULL for todos in the main list, and contains a string identifier for todos in separate AI-generated lists.
 
 ## Troubleshooting
 

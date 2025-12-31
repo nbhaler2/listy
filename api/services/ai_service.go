@@ -30,15 +30,12 @@ Goal: "%s"
 
 Generate a JSON array of tasks. Each task should have:
 - text: A clear, actionable task description
-- priority: "high", "medium", or "low"
-- estimated_time: An estimate like "15 minutes", "30 minutes", "1 hour", etc.
-- category: A relevant category tag (optional, can be empty string)
 
 Return ONLY a valid JSON array, no other text. Example format:
 [
-  {"text": "Install Go on your system", "priority": "high", "estimated_time": "15 minutes", "category": "setup"},
-  {"text": "Read Go documentation basics", "priority": "high", "estimated_time": "1 hour", "category": "learning"},
-  {"text": "Write your first Hello World program", "priority": "medium", "estimated_time": "30 minutes", "category": "practice"}
+  {"text": "Install Go on your system"},
+  {"text": "Read Go documentation basics"},
+  {"text": "Write your first Hello World program"}
 ]`, goal)
 
 	// Make API call
@@ -87,4 +84,3 @@ Return ONLY a valid JSON array, no other text. Example format:
 
 	return tasks, nil
 }
-

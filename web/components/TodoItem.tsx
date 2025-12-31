@@ -49,66 +49,28 @@ export default function TodoItem({ todo, onToggle, onDelete, onUpdate }: TodoIte
         )}
       </button>
 
-      <div className="flex-1 min-w-0">
-        {isEditing ? (
-          <input
-            type="text"
-            value={editText}
-            onChange={(e) => setEditText(e.target.value)}
-            onBlur={handleUpdate}
-            onKeyDown={handleKeyPress}
-            className="w-full px-4 py-2 border-2 border-blue-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-800 font-medium"
-            autoFocus
-          />
-        ) : (
-          <div>
-            <span
-              onClick={() => setIsEditing(true)}
-              className={`cursor-text font-medium transition-colors block ${
-                todo.done 
-                  ? 'line-through text-gray-400' 
-                  : 'text-gray-800 hover:text-blue-600'
-              }`}
-            >
-              {todo.item}
-            </span>
-            {/* Metadata badges */}
-            {(todo.priority || todo.estimated_time || todo.category) && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {todo.priority && (
-                  <span
-                    className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      todo.priority === 'high'
-                        ? 'bg-red-100 text-red-700 border border-red-300'
-                        : todo.priority === 'medium'
-                        ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
-                        : 'bg-green-100 text-green-700 border border-green-300'
-                    }`}
-                  >
-                    {todo.priority}
-                  </span>
-                )}
-                {todo.estimated_time && (
-                  <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 border border-blue-300 flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {todo.estimated_time}
-                  </span>
-                )}
-                {todo.category && (
-                  <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700 border border-purple-300 flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                    </svg>
-                    {todo.category}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      {isEditing ? (
+        <input
+          type="text"
+          value={editText}
+          onChange={(e) => setEditText(e.target.value)}
+          onBlur={handleUpdate}
+          onKeyDown={handleKeyPress}
+          className="flex-1 px-4 py-2 border-2 border-blue-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-800 font-medium"
+          autoFocus
+        />
+      ) : (
+        <span
+          onClick={() => setIsEditing(true)}
+          className={`flex-1 cursor-text font-medium transition-colors ${
+            todo.done 
+              ? 'line-through text-gray-400' 
+              : 'text-gray-800 hover:text-blue-600'
+          }`}
+        >
+          {todo.item}
+        </span>
+      )}
 
       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
