@@ -76,7 +76,7 @@ func CreateAITasks(c *gin.Context) {
 			}
 		}
 
-		todo, err := services.CreateTodo(taskText)
+		todo, err := services.CreateTodo(taskText, req.ListId)
 		if err != nil {
 			errors = append(errors, "Failed to create task: "+aiTask.Text+" - "+err.Error())
 			continue

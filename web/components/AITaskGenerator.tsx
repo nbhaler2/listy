@@ -13,6 +13,8 @@ export default function AITaskGenerator({ onTasksCreated }: AITaskGeneratorProps
   const [generatedTasks, setGeneratedTasks] = useState<AITask[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [addToMainList, setAddToMainList] = useState(true); // true = main list, false = new list
+  const [listName, setListName] = useState('');
 
   const handleGenerate = async () => {
     if (!goal.trim()) {
@@ -70,14 +72,24 @@ export default function AITaskGenerator({ onTasksCreated }: AITaskGeneratorProps
       return;
     }
 
+    // If creating new list, validate list name
+    if (!addToMainList && !listName.trim()) {
+      setError('Please enter a name for the new list');
+      return;
+    }
+
     setIsCreating(true);
     setError(null);
 
     try {
-      await createAITasks(validTasks);
+      // Determine listId: null for main list, or the list name for new list
+      const listId = addToMainList ? null : listName.trim();
+      await createAITasks(validTasks, listId);
       // Reset form
       setGoal('');
       setGeneratedTasks([]);
+      setListName('');
+      setAddToMainList(true);
       // Notify parent to refresh todos
       onTasksCreated();
     } catch (err) {
@@ -247,12 +259,63 @@ export default function AITaskGenerator({ onTasksCreated }: AITaskGeneratorProps
             ))}
           </div>
 
+          {/* List Selection */}
+          <div className="pt-4 border-t border-purple-200">
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Add tasks to:
+              </label>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setAddToMainList(true);
+                    setListName('');
+                  }}
+                  className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all ${
+                    addToMainList
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                      : 'bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Main List
+                </button>
+                <button
+                  onClick={() => setAddToMainList(false)}
+                  className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all ${
+                    !addToMainList
+                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
+                      : 'bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  New List
+                </button>
+              </div>
+            </div>
+            {!addToMainList && (
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  List Name:
+                </label>
+                <input
+                  type="text"
+                  value={listName}
+                  onChange={(e) => setListName(e.target.value)}
+                  placeholder="e.g., Learning Go, Vacation Planning..."
+                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-800 placeholder-gray-400"
+                  disabled={isCreating}
+                />
+              </div>
+            )}
+          </div>
+
           {/* Create All Button */}
           <div className="flex gap-3 pt-4 border-t border-purple-200">
             <button
               onClick={() => {
                 setGeneratedTasks([]);
                 setGoal('');
+                setListName('');
+                setAddToMainList(true);
               }}
               className="flex-1 px-4 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-semibold"
             >

@@ -24,6 +24,7 @@ type AITaskBreakdownResponse struct {
 // CreateAITasksRequest represents request to create multiple todos from AI tasks
 type CreateAITasksRequest struct {
 	Tasks []AITask `json:"tasks" binding:"required"`
+	ListId *string `json:"list_id,omitempty"` // Optional: if provided, creates todos in specific list
 }
 
 

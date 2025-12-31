@@ -16,6 +16,7 @@ export interface Todo {
   id: number;
   item: string;
   done: boolean;
+  list_id?: string | null; // null means main list
 }
 
 export interface ApiResponse<T> {
@@ -80,13 +81,13 @@ export async function getCompletedTodos(): Promise<Todo[]> {
 }
 
 // Create a new todo
-export async function createTodo(item: string): Promise<Todo> {
+export async function createTodo(item: string, listId?: string | null): Promise<Todo> {
   const response = await fetch(`${API_BASE_URL}/api/todos`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ item }),
+    body: JSON.stringify({ item, list_id: listId || null }),
   });
   if (!response.ok) {
     const error = await response.json();
@@ -167,13 +168,13 @@ export async function generateTaskBreakdown(goal: string): Promise<AITaskBreakdo
 }
 
 // AI: Create multiple todos from AI tasks
-export async function createAITasks(tasks: AITask[]): Promise<Todo[]> {
+export async function createAITasks(tasks: AITask[], listId?: string | null): Promise<Todo[]> {
   const response = await fetch(`${API_BASE_URL}/api/todos/ai/create`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ tasks }),
+    body: JSON.stringify({ tasks, list_id: listId || null }),
   });
   if (!response.ok) {
     const error = await response.json();
@@ -182,6 +183,33 @@ export async function createAITasks(tasks: AITask[]): Promise<Todo[]> {
   const result: ApiResponse<Todo[]> = await response.json();
   if (!result.success) {
     throw new Error(result.error || 'Failed to create AI tasks');
+  }
+  return result.data;
+}
+
+// Get todos by list ID (null or "main" for main list)
+export async function getTodosByList(listId: string | null): Promise<Todo[]> {
+  const listParam = listId === null || listId === 'main' ? 'main' : listId;
+  const response = await fetch(`${API_BASE_URL}/api/todos/list/${listParam}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch todos for list');
+  }
+  const result: ApiResponse<Todo[]> = await response.json();
+  if (!result.success) {
+    throw new Error(result.error || 'Failed to fetch todos for list');
+  }
+  return result.data;
+}
+
+// Get all lists
+export async function getAllLists(): Promise<string[]> {
+  const response = await fetch(`${API_BASE_URL}/api/lists`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch lists');
+  }
+  const result: ApiResponse<string[]> = await response.json();
+  if (!result.success) {
+    throw new Error(result.error || 'Failed to fetch lists');
   }
   return result.data;
 }

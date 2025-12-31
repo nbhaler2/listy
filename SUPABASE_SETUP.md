@@ -22,6 +22,7 @@
 | id | int8 | (auto-increment) | No | Yes |
 | item | text | - | No | No |
 | done | bool | false | No | No |
+| list_id | text | NULL | Yes | No |
 
 5. Click **"Save"**
 
@@ -67,6 +68,21 @@ go run todolist.go list
 ```
 
 You should see your todo! Check your Supabase dashboard > Table Editor > todos to see it in the database.
+
+## Adding list_id Column (For AI Lists Feature)
+
+If you're upgrading an existing database to support the AI lists feature:
+
+1. Go to **Table Editor** > **todos** table
+2. Click **"Add column"**
+3. Fill in:
+   - **Name**: `list_id`
+   - **Type**: `text`
+   - **Default value**: Leave empty (NULL)
+   - **Nullable**: ✅ Yes
+4. Click **"Save"**
+
+**Note**: `list_id` is NULL for todos in the main list, and contains a string identifier for todos in separate AI-generated lists.
 
 ## Troubleshooting
 

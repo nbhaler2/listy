@@ -65,13 +65,41 @@ func CreateTodo(c *gin.Context) {
 		return
 	}
 
-	todo, err := services.CreateTodo(req.Item)
+	todo, err := services.CreateTodo(req.Item, req.ListId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"success": true, "data": todo})
+}
+
+// GetTodosByList handles GET /api/todos/list/:listId
+// If listId is "main" or empty, returns main list todos (list_id is NULL)
+func GetTodosByList(c *gin.Context) {
+	listIdParam := c.Param("listId")
+	var listId *string
+	
+	if listIdParam != "" && listIdParam != "main" {
+		listId = &listIdParam
+	}
+
+	todos, err := services.GetTodosByListId(listId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "data": todos})
+}
+
+// GetAllLists handles GET /api/lists
+func GetAllLists(c *gin.Context) {
+	listIds, err := services.GetAllListIds()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "data": listIds})
 }
 
 // UpdateTodo handles PUT /api/todos/:id

@@ -43,11 +43,18 @@ func main() {
 		api.GET("", handlers.GetTodos)                    // GET /api/todos
 		api.GET("/pending", handlers.GetPendingTodos)     // GET /api/todos/pending
 		api.GET("/completed", handlers.GetCompletedTodos) // GET /api/todos/completed
+		api.GET("/list/:listId", handlers.GetTodosByList) // GET /api/todos/list/:listId (or "main" for main list)
 		api.GET("/:id", handlers.GetTodoByID)             // GET /api/todos/:id
 		api.POST("", handlers.CreateTodo)                 // POST /api/todos
 		api.PUT("/:id", handlers.UpdateTodo)              // PUT /api/todos/:id
 		api.PATCH("/:id/toggle", handlers.ToggleTodo)     // PATCH /api/todos/:id/toggle
 		api.DELETE("/:id", handlers.DeleteTodo)           // DELETE /api/todos/:id
+	}
+
+	// List routes
+	lists := r.Group("/api/lists")
+	{
+		lists.GET("", handlers.GetAllLists) // GET /api/lists
 	}
 
 	// AI routes

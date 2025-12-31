@@ -36,6 +36,55 @@ func GetAllTodos() ([]models.Todo, error) {
 	return todos, nil
 }
 
+// GetTodosByListId returns todos for a specific list (nil listId means main list)
+func GetTodosByListId(listId *string) ([]models.Todo, error) {
+	allTodos, err := GetAllTodos()
+	if err != nil {
+		return nil, err
+	}
+
+	var filtered []models.Todo
+	for _, todo := range allTodos {
+		// If listId is nil, return todos with nil listId (main list)
+		// If listId is provided, return todos matching that listId
+		if listId == nil {
+			if todo.ListId == nil {
+				filtered = append(filtered, todo)
+			}
+		} else {
+			if todo.ListId != nil && *todo.ListId == *listId {
+				filtered = append(filtered, todo)
+			}
+		}
+	}
+
+	return filtered, nil
+}
+
+// GetAllListIds returns all unique list IDs (excluding main list)
+func GetAllListIds() ([]string, error) {
+	todos, err := GetAllTodos()
+	if err != nil {
+		return nil, err
+	}
+
+	listMap := make(map[string]bool)
+	for _, todo := range todos {
+		if todo.ListId != nil && *todo.ListId != "" {
+			listMap[*todo.ListId] = true
+		}
+	}
+
+	var listIds []string
+	for listId := range listMap {
+		listIds = append(listIds, listId)
+	}
+
+	// Sort for consistency
+	sort.Strings(listIds)
+	return listIds, nil
+}
+
 // GetPendingTodos returns only pending todos
 func GetPendingTodos() ([]models.Todo, error) {
 	todos, err := GetAllTodos()
@@ -87,7 +136,7 @@ func GetTodoByID(id int) (*models.Todo, error) {
 }
 
 // CreateTodo creates a new todo
-func CreateTodo(item string) (*models.Todo, error) {
+func CreateTodo(item string, listId *string) (*models.Todo, error) {
 	// Get all todos to calculate next ID
 	todos, err := GetAllTodos()
 	if err != nil {
@@ -96,9 +145,10 @@ func CreateTodo(item string) (*models.Todo, error) {
 
 	nextID := GetNextID(todos)
 	newTodo := models.Todo{
-		Id:   nextID,
-		Item: item,
-		Done: false,
+		Id:     nextID,
+		Item:   item,
+		Done:   false,
+		ListId: listId,
 	}
 
 	err = database.InsertTodo(newTodo)
