@@ -14,9 +14,11 @@ export default function ListsSidebar({ selectedListId, onSelectList, onListsChan
   const [loading, setLoading] = useState(true);
   const [listCounts, setListCounts] = useState<Record<string, number>>({});
 
-  const fetchLists = async () => {
+  const fetchLists = async (showLoading = false) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       const fetchedLists = await getAllLists();
       setLists(fetchedLists);
 
@@ -35,28 +37,21 @@ export default function ListsSidebar({ selectedListId, onSelectList, onListsChan
       console.error('Error fetching lists:', err);
       setLists([]);
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
+  // Initial load - show loading spinner
   useEffect(() => {
-    fetchLists();
+    fetchLists(true);
   }, []);
 
-  // Refresh when lists change
+  // Refresh when parent notifies (silent refresh, no loading spinner)
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetchLists();
-    }, 3000); // Refresh every 3 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Expose refresh function to parent
-  useEffect(() => {
-    // This will be called when parent wants to refresh
     if (onListsChanged > 0) {
-      fetchLists();
+      fetchLists(false); // Silent refresh
     }
   }, [onListsChanged]);
 

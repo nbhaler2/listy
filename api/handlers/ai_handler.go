@@ -61,22 +61,22 @@ func CreateAITasks(c *gin.Context) {
 	var errors []string
 
 	for _, aiTask := range req.Tasks {
-		// Format task text with metadata if available
+		// Use clean task text
 		taskText := aiTask.Text
-		if aiTask.Priority != "" || aiTask.EstimatedTime != "" {
-			// Add metadata as part of the task text (we can enhance this later)
-			if aiTask.Priority != "" {
-				taskText += " [" + aiTask.Priority + " priority"
-				if aiTask.EstimatedTime != "" {
-					taskText += ", " + aiTask.EstimatedTime
-				}
-				taskText += "]"
-			} else if aiTask.EstimatedTime != "" {
-				taskText += " [" + aiTask.EstimatedTime + "]"
-			}
+
+		// Store metadata separately
+		var priority, estimatedTime, category *string
+		if aiTask.Priority != "" {
+			priority = &aiTask.Priority
+		}
+		if aiTask.EstimatedTime != "" {
+			estimatedTime = &aiTask.EstimatedTime
+		}
+		if aiTask.Category != "" {
+			category = &aiTask.Category
 		}
 
-		todo, err := services.CreateTodo(taskText, req.ListId)
+		todo, err := services.CreateTodoWithMetadata(taskText, req.ListId, priority, estimatedTime, category)
 		if err != nil {
 			errors = append(errors, "Failed to create task: "+aiTask.Text+" - "+err.Error())
 			continue

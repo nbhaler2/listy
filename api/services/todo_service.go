@@ -137,6 +137,11 @@ func GetTodoByID(id int) (*models.Todo, error) {
 
 // CreateTodo creates a new todo
 func CreateTodo(item string, listId *string) (*models.Todo, error) {
+	return CreateTodoWithMetadata(item, listId, nil, nil, nil)
+}
+
+// CreateTodoWithMetadata creates a new todo with metadata
+func CreateTodoWithMetadata(item string, listId *string, priority *string, estimatedTime *string, category *string) (*models.Todo, error) {
 	// Get all todos to calculate next ID
 	todos, err := GetAllTodos()
 	if err != nil {
@@ -145,10 +150,13 @@ func CreateTodo(item string, listId *string) (*models.Todo, error) {
 
 	nextID := GetNextID(todos)
 	newTodo := models.Todo{
-		Id:     nextID,
-		Item:   item,
-		Done:   false,
-		ListId: listId,
+		Id:            nextID,
+		Item:          item,
+		Done:          false,
+		ListId:        listId,
+		Priority:      priority,
+		EstimatedTime: estimatedTime,
+		Category:      category,
 	}
 
 	err = database.InsertTodo(newTodo)

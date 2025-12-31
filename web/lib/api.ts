@@ -17,6 +17,9 @@ export interface Todo {
   item: string;
   done: boolean;
   list_id?: string | null; // null means main list
+  priority?: string | null; // "high", "medium", "low"
+  estimated_time?: string | null; // e.g., "30 minutes", "1 hour"
+  category?: string | null; // Optional category/tag
 }
 
 export interface ApiResponse<T> {
