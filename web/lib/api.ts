@@ -25,6 +25,21 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+// AI-related types
+export interface AITask {
+  text: string;
+  priority: 'high' | 'medium' | 'low';
+  estimated_time: string;
+  category: string;
+}
+
+export interface AITaskBreakdownResponse {
+  success: boolean;
+  goal: string;
+  suggested_tasks: AITask[];
+  message?: string;
+}
+
 // Get all todos
 export async function getTodos(): Promise<Todo[]> {
   const response = await fetch(`${API_BASE_URL}/api/todos`);
@@ -127,6 +142,46 @@ export async function toggleTodo(id: number): Promise<Todo> {
   const result: ApiResponse<Todo> = await response.json();
   if (!result.success) {
     throw new Error(result.error || 'Failed to toggle todo');
+  }
+  return result.data;
+}
+
+// AI: Generate task breakdown
+export async function generateTaskBreakdown(goal: string): Promise<AITaskBreakdownResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/todos/ai/breakdown`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ goal }),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to generate task breakdown');
+  }
+  const result: AITaskBreakdownResponse = await response.json();
+  if (!result.success) {
+    throw new Error('Failed to generate task breakdown');
+  }
+  return result;
+}
+
+// AI: Create multiple todos from AI tasks
+export async function createAITasks(tasks: AITask[]): Promise<Todo[]> {
+  const response = await fetch(`${API_BASE_URL}/api/todos/ai/create`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ tasks }),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to create AI tasks');
+  }
+  const result: ApiResponse<Todo[]> = await response.json();
+  if (!result.success) {
+    throw new Error(result.error || 'Failed to create AI tasks');
   }
   return result.data;
 }

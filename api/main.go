@@ -50,6 +50,13 @@ func main() {
 		api.DELETE("/:id", handlers.DeleteTodo)           // DELETE /api/todos/:id
 	}
 
+	// AI routes
+	ai := r.Group("/api/todos/ai")
+	{
+		ai.POST("/breakdown", handlers.GenerateTaskBreakdown) // POST /api/todos/ai/breakdown
+		ai.POST("/create", handlers.CreateAITasks)            // POST /api/todos/ai/create
+	}
+
 	// Get port from environment or default to 8080
 	port := os.Getenv("PORT")
 	if port == "" {

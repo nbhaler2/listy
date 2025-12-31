@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Todo, getTodos, getPendingTodos, getCompletedTodos, createTodo, updateTodo, deleteTodo, toggleTodo } from '@/lib/api';
 import AddTodoForm from '@/components/AddTodoForm';
 import TodoList from '@/components/TodoList';
+import AITaskGenerator from '@/components/AITaskGenerator';
 
 type Filter = 'all' | 'pending' | 'completed';
 
@@ -97,6 +98,9 @@ export default function Home() {
           </h1>
           <p className="text-gray-600 text-lg">Your smart todo list manager</p>
         </div>
+
+        {/* AI Task Generator Section */}
+        <AITaskGenerator onTasksCreated={fetchTodos} />
 
         {/* Main Card */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
@@ -224,7 +228,7 @@ export default function Home() {
             <span className="font-semibold text-indigo-600">Next.js</span>
           </p>
         </div>
-      </div>
+        </div>
     </div>
   );
 }
