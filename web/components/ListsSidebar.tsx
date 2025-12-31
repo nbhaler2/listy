@@ -55,10 +55,10 @@ export default function ListsSidebar({ selectedListId, onSelectList, onListsChan
   // Expose refresh function to parent
   useEffect(() => {
     // This will be called when parent wants to refresh
-    if (listsChanged > 0) {
+    if (onListsChanged > 0) {
       fetchLists();
     }
-  }, [listsChanged]);
+  }, [onListsChanged]);
 
   const getListDisplayName = (listId: string) => {
     // Capitalize first letter and replace underscores with spaces
