@@ -37,6 +37,14 @@ func main() {
 	// Health check endpoint
 	r.GET("/api/health", handlers.HealthCheck)
 
+	// AI routes - register BEFORE /api/todos/:id to avoid route conflicts
+	ai := r.Group("/api/todos/ai")
+	{
+		ai.POST("/breakdown", handlers.GenerateTaskBreakdown)   // POST /api/todos/ai/breakdown (for main list)
+		ai.POST("/subtasks", handlers.GenerateSubtaskBreakdown) // POST /api/todos/ai/subtasks (for subtasks)
+		ai.POST("/create", handlers.CreateAITasks)              // POST /api/todos/ai/create
+	}
+
 	// Todo routes
 	api := r.Group("/api/todos")
 	{
@@ -55,13 +63,6 @@ func main() {
 	lists := r.Group("/api/lists")
 	{
 		lists.GET("", handlers.GetAllLists) // GET /api/lists
-	}
-
-	// AI routes
-	ai := r.Group("/api/todos/ai")
-	{
-		ai.POST("/breakdown", handlers.GenerateTaskBreakdown) // POST /api/todos/ai/breakdown
-		ai.POST("/create", handlers.CreateAITasks)            // POST /api/todos/ai/create
 	}
 
 	// Get port from environment or default to 8080

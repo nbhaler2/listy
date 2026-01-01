@@ -150,8 +150,10 @@ export default function Home() {
             )}
           </div>
 
-          {/* AI Task Generator Section */}
-          <AITaskGenerator onTasksCreated={() => { fetchTodos(); handleListsChanged(); }} />
+          {/* AI Task Generator Section - Only show on main list */}
+          {selectedListId === null && (
+            <AITaskGenerator onTasksCreated={() => { fetchTodos(); handleListsChanged(); }} />
+          )}
 
           {/* Main Card */}
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
@@ -225,6 +227,8 @@ export default function Home() {
                   onToggle={handleToggle}
                   onDelete={handleDelete}
                   onUpdate={handleUpdate}
+                  showAIBreakdown={selectedListId !== null} // Show AI button for tasks in AI-generated lists
+                  onRefresh={fetchTodos}
                 />
               )}
 

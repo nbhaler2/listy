@@ -147,7 +147,7 @@ export async function toggleTodo(id: number): Promise<Todo> {
   return result.data;
 }
 
-// AI: Generate task breakdown
+// AI: Generate task breakdown (for main list)
 export async function generateTaskBreakdown(goal: string): Promise<AITaskBreakdownResponse> {
   const response = await fetch(`${API_BASE_URL}/api/todos/ai/breakdown`, {
     method: 'POST',
@@ -163,6 +163,33 @@ export async function generateTaskBreakdown(goal: string): Promise<AITaskBreakdo
   const result: AITaskBreakdownResponse = await response.json();
   if (!result.success) {
     throw new Error('Failed to generate task breakdown');
+  }
+  return result;
+}
+
+// AI: Generate subtask breakdown (for individual tasks - smart breakdown)
+export async function generateSubtaskBreakdown(task: string): Promise<AITaskBreakdownResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/todos/ai/subtasks`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ goal: task }),
+  });
+  if (!response.ok) {
+    let errorMessage = 'Failed to generate subtask breakdown';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch (e) {
+      // If response is not JSON (e.g., 404 HTML page), use status text
+      errorMessage = `Server error: ${response.status} ${response.statusText}`;
+    }
+    throw new Error(errorMessage);
+  }
+  const result: AITaskBreakdownResponse = await response.json();
+  if (!result.success) {
+    throw new Error('Failed to generate subtask breakdown');
   }
   return result;
 }

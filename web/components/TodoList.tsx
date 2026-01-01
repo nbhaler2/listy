@@ -8,9 +8,11 @@ interface TodoListProps {
   onToggle: (id: number) => void;
   onDelete: (id: number) => void;
   onUpdate: (id: number, item: string) => void;
+  showAIBreakdown?: boolean; // Show AI button for tasks in AI-generated lists
+  onRefresh?: () => void; // Callback to refresh the list
 }
 
-export default function TodoList({ todos, onToggle, onDelete, onUpdate }: TodoListProps) {
+export default function TodoList({ todos, onToggle, onDelete, onUpdate, showAIBreakdown = false, onRefresh }: TodoListProps) {
   if (todos.length === 0) {
     return (
       <div className="text-center py-16">
@@ -38,6 +40,8 @@ export default function TodoList({ todos, onToggle, onDelete, onUpdate }: TodoLi
             onToggle={onToggle}
             onDelete={onDelete}
             onUpdate={onUpdate}
+            showAIBreakdown={showAIBreakdown}
+            onRefresh={onRefresh}
           />
         </div>
       ))}

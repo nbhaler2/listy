@@ -92,3 +92,37 @@ func CreateAITasks(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, response)
 }
+
+// GenerateSubtaskBreakdown handles POST /api/todos/ai/subtasks
+// Generates subtasks for a specific task (only if it can be meaningfully broken down)
+func GenerateSubtaskBreakdown(c *gin.Context) {
+	var req models.AITaskBreakdownRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate goal is not empty
+	if req.Goal == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "task is required"})
+		return
+	}
+
+	// Generate subtask breakdown using AI (smart breakdown)
+	tasks, err := services.GenerateSubtaskBreakdown(req.Goal)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   err.Error(),
+			"message": "Failed to generate subtask breakdown",
+		})
+		return
+	}
+
+	// Return success response (empty array is valid - means task cannot be broken down)
+	c.JSON(http.StatusOK, models.AITaskBreakdownResponse{
+		Success:        true,
+		Goal:           req.Goal,
+		SuggestedTasks: tasks,
+		Message:        "Subtask breakdown generated successfully",
+	})
+}
